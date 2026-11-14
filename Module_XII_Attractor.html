@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The attractor — Module XII | Chronowave Dynamics</title>
+<meta name="description" content="Module XII of the Chronowave Dynamics Temporal Engine: Where it all began: pulses on a Lorenz attractor.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23070B14'/%3E%3Ctext x='32' y='44' font-family='serif' font-style='italic' font-size='34' fill='%23F5A83C' text-anchor='middle'%3Et%C2%B3%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+/* ============================================================
+   CHRONOWAVE DYNAMICS · TEMPORAL ENGINE
+   phosphor cyan → thermal amber duotone over a deep time-field
+   ============================================================ */
+:root{
+  --field:      #070B14;
+  --field-2:    #0B1120;
+  --field-3:    #101830;
+  --ivory:      #EDE8DC;
+  --ivory-dim:  rgba(237,232,220,.62);
+  --ivory-faint:rgba(237,232,220,.38);
+  --cyan:       #59D6C9;
+  --cyan-dim:   rgba(89,214,201,.35);
+  --amber:      #F5A83C;
+  --amber-dim:  rgba(245,168,60,.35);
+  --hairline:   rgba(237,232,220,.12);
+  --serif: "STIX Two Text", "Times New Roman", serif;
+  --grot:  "Space Grotesk", system-ui, sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, monospace;
+  --max: 1140px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{
+  background:var(--field); color:var(--ivory);
+  font-family:var(--serif); font-size:17px; line-height:1.72;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+::selection{background:var(--amber);color:var(--field)}
+
+.wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(18px,4.5vw,56px)}
+.eyebrow{
+  font-family:var(--grot);font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--cyan);font-weight:500;display:flex;align-items:center;gap:14px;
+}
+.eyebrow::after{content:"";height:1px;flex:0 0 56px;background:linear-gradient(90deg,var(--cyan),transparent)}
+.eyebrow .rn{color:var(--amber);letter-spacing:.14em}
+h2{font-family:var(--serif);font-weight:500;font-size:clamp(29px,4vw,44px);line-height:1.16;letter-spacing:-.01em;margin:18px 0 8px}
+h2 em{font-style:italic;color:var(--amber)}
+h3{font-family:var(--serif);font-weight:600;font-size:20px;margin:0 0 6px}
+.lede{font-size:clamp(17px,1.6vw,20px);color:var(--ivory-dim);max-width:64ch}
+p{color:var(--ivory-dim);max-width:66ch;margin-bottom:1.1em}
+p strong{color:var(--ivory);font-weight:600}
+section{padding:clamp(68px,9vh,120px) 0;position:relative}
+section + section{border-top:1px solid var(--hairline)}
+
+/* equation panels */
+.eq-panel{background:linear-gradient(180deg,var(--field-2),rgba(13,21,36,.6));border:1px solid var(--hairline);border-left:none;border-radius:10px;padding:26px 26px 22px;margin:26px 0;overflow:visible;position:relative;counter-increment:eqn}
+.eq-panel::after{content:"eq " counter(eqn,decimal-leading-zero);position:absolute;right:14px;bottom:8px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:rgba(237,232,220,.28)}
+.eq-panel{box-shadow:inset 3px 0 0 0 var(--cyan)}
+.eq-panel[data-tag*="ASSUMED" i]{box-shadow:inset 3px 0 0 0 rgba(232,110,204,.85)}
+.eq-panel[data-tag*="ASSUMED" i]::before{color:rgba(232,110,204,.9)}
+.eq-panel[data-tag*="MEASURED" i],.eq-panel[data-tag*="FITTED" i]{box-shadow:inset 3px 0 0 0 var(--amber)}
+.eq-panel[data-tag*="MEASURED" i]::before,.eq-panel[data-tag*="FITTED" i]::before{color:var(--amber)}
+.eq-panel::before{content:attr(data-tag);position:absolute;top:-9px;left:20px;font-family:var(--grot);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--cyan);background:var(--field);padding:0 10px;max-width:86%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq{color:var(--ivory);font-size:18px;text-align:center}
+.eq .katex{font-size:1.08em}
+.eq .katex-display{margin:.35em 0}
+.eq-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin;scrollbar-color:rgba(89,214,201,.35) transparent}
+.eq-scroll::-webkit-scrollbar{height:5px}
+.eq-scroll::-webkit-scrollbar-thumb{background:rgba(89,214,201,.28);border-radius:3px}
+.eq-scroll::-webkit-scrollbar-track{background:transparent}
+.katex-fallback{font-family:var(--mono);font-size:13px;color:var(--cyan);white-space:pre-wrap}
+body{counter-reset:eqn}
+
+/* instrument chrome */
+.readout{font-family:var(--mono);font-size:12.5px;color:var(--cyan);letter-spacing:.03em}
+.readout b{color:var(--amber);font-weight:500}
+.panel{background:var(--field-2);border:1px solid var(--hairline);border-radius:12px;overflow:hidden}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--hairline);font-family:var(--grot);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-faint);flex-wrap:wrap}
+canvas.viz{display:block;width:100%;height:auto;background:radial-gradient(120% 100% at 50% 0%, rgba(89,214,201,.05), transparent 60%), var(--field-2)}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:20px 30px;padding:18px 20px;border-top:1px solid var(--hairline)}
+/* The basis carries the 170px, not min-width: `.controls .ctrl{min-width:0}` further down (the phone
+   fix) cancels the minimum at every width, and with flex:1's zero basis a slider then never forces a
+   wrap. It shrank to 11px beside its neighbours instead (the Lorenz rho, sigma and beta sliders). */
+.ctrl{min-width:170px;flex:1 1 170px}
+.ctrl.narrow{min-width:130px;flex:0 1 180px}
+.ctrl label{display:flex;justify-content:space-between;gap:8px;font-family:var(--grot);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ivory-faint);margin-bottom:8px}
+.ctrl label output{font-family:var(--mono);color:var(--amber);letter-spacing:0;text-transform:none;white-space:nowrap}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--amber));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--ivory);border:2px solid var(--field);box-shadow:0 0 0 1.5px var(--cyan),0 0 12px rgba(89,214,201,.5)}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--ivory);border:2px solid var(--field);box-shadow:0 0 0 1.5px var(--cyan)}
+input[type=range]:focus-visible{outline:2px solid var(--amber);outline-offset:6px}
+.btn{font-family:var(--grot);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--field);background:var(--cyan);border:none;border-radius:100px;padding:11px 22px;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s}
+.btn:hover{background:var(--amber);box-shadow:0 0 24px rgba(245,168,60,.35)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--ivory);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--cyan);border:1px solid var(--cyan-dim)}
+.btn.ghost:hover{color:var(--amber);border-color:var(--amber);box-shadow:none}
+.btn.live{background:var(--amber)}
+.btn.mini{padding:7px 14px;font-size:10.5px}
+.seg{display:inline-flex;border:1px solid var(--hairline);border-radius:100px;overflow:hidden;flex-wrap:wrap}
+.seg button{font-family:var(--grot);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;background:transparent;color:var(--ivory-faint);border:none;padding:9px 17px;cursor:pointer;transition:color .2s,background .2s}
+.seg button+button{border-left:1px solid var(--hairline)}
+.seg button[aria-pressed="true"]{background:var(--field-3);color:var(--amber)}
+.seg button:focus-visible{outline:2px solid var(--cyan);outline-offset:-3px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ivory-dim);background:transparent;border:1px solid var(--hairline);border-radius:100px;padding:6px 13px;cursor:pointer;transition:all .18s}
+.chip:hover{border-color:var(--cyan);color:var(--cyan)}
+.chip[aria-pressed="true"]{border-color:var(--amber);color:var(--amber);background:rgba(245,168,60,.08)}
+.chip:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* stat tiles */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--hairline);border-top:1px solid var(--hairline)}
+.stat{background:var(--field-2);padding:14px 18px}
+.stat .k{font-family:var(--grot);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory-faint)}
+.stat .v{font-family:var(--mono);font-size:14.5px;color:var(--cyan);margin-top:4px;word-break:break-all}
+.stat .v.warm{color:var(--amber)}
+
+/* nav */
+nav#tf-nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(7,11,20,.75);border-bottom:1px solid var(--hairline)}
+nav#tf-nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:20px}
+.brand{font-family:var(--grot);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--ivory);text-decoration:none;font-weight:600;white-space:nowrap}
+.brand span{color:var(--amber)}
+.navlinks{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.navlinks::-webkit-scrollbar{display:none}
+.navlinks a{font-family:var(--grot);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ivory-faint);text-decoration:none;transition:color .2s;white-space:nowrap}
+.navlinks a:hover{color:var(--cyan)}
+.navlinks a .rn{color:var(--amber);margin-right:5px}
+@media(max-width:640px){.navlinks{display:none}}
+
+/* hero */
+header#hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding:120px 0 80px}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+#hero .wrap{position:relative;z-index:2}
+#hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(7,11,20,.25) 0%,rgba(7,11,20,0) 40%,rgba(7,11,20,.85) 92%)}
+.hero-kicker{font-family:var(--grot);font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--cyan);margin-bottom:26px}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(42px,8vw,104px);line-height:.98;letter-spacing:-.02em}
+h1 .t-sup{display:inline-block;color:var(--amber);font-style:italic}
+.hero-sub{margin-top:30px;font-size:clamp(17px,1.9vw,21px);color:var(--ivory-dim);max-width:58ch}
+.hero-sub i{color:var(--ivory)}
+.hero-meta{margin-top:40px;display:flex;gap:32px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--ivory-faint);letter-spacing:.05em}
+.hero-meta div b{display:block;color:var(--cyan);font-weight:400;margin-bottom:3px}
+.hero-cta{margin-top:42px;display:flex;gap:14px;flex-wrap:wrap}
+.scroll-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:2;font-family:var(--grot);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--ivory-faint);animation:hint 2.6s ease-in-out infinite}
+@keyframes hint{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+@media(prefers-reduced-motion:reduce){.scroll-hint{animation:none}}
+
+/* dimensional ladder */
+.ladder-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:start;margin-top:32px}
+@media(max-width:900px){.ladder-grid{grid-template-columns:1fr}}
+.dim-list{display:flex;flex-direction:column;gap:2px}
+#frameBar{position:relative;margin-top:-58px;display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 14px;background:linear-gradient(rgba(7,11,20,0),rgba(7,11,20,.88) 40%)}
+#frameBar .chips{margin:0;justify-content:center}
+.readout{font-variant-numeric:tabular-nums}
+#hlStepVals{display:inline-block;min-width:30ch;white-space:nowrap}
+#hlRung{display:inline-block;min-width:38ch;white-space:nowrap;text-align:right}
+.stepGrp{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 12px;border:1px solid var(--hairline);border-radius:999px;background:rgba(13,21,36,.8)}
+.stepGrp .readout{min-width:auto}
+#hlFineBand{display:none}
+#hlFineBand.on{display:flex;flex-wrap:wrap;align-items:flex-end}
+.hl-fine label{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hl-fine output{min-width:82px;text-align:right;font-variant-numeric:tabular-nums}
+.hl-fine input[type=range]{width:100%}
+#ladderCanvas,#hlCanvas,#meshCanvas,#lorenzCanvas,#tvCanvas,#tfeCanvas{touch-action:none}
+@media (pointer:coarse){
+  .btn.mini{min-height:34px;min-width:34px;padding:6px 12px}
+  .stepGrp{padding:5px 12px}
+  input[type=number]{font-size:16px !important}
+  input[type=range]{min-height:30px}
+  select{min-height:32px;font-size:13px !important}
+}
+@media (max-width:720px){
+  .wrap{padding-left:14px;padding-right:14px}
+  .controls{gap:10px}
+  .ctrl.narrow{flex:1 1 100%}
+  #hlStepRow{gap:8px}
+  .readout{font-size:11px}
+  #meshAlg label{flex:1 1 100%}
+}
+
+/* ============ NARROW-VIEWPORT CONTAINMENT ============
+   Measured, not guessed: Chromium at 320 and 360 px reported
+   document.scrollWidth = 383, i.e. the whole page scrolled sideways, and the
+   deepest causes were a table row with min-content 369 px and a canvas with
+   min-content 367 px — both already sitting inside overflow-x:auto parents.
+   The reason the parents were not containing them is the default every grid
+   and flex item carries: min-width:auto, which resolves to MIN-CONTENT and
+   quietly overrides the scroll container. overflow-x:auto cannot shrink a box
+   whose minimum size is its content. So the fix is min-width:0 in the places
+   that scroll or are scrolled, and it belongs at every width, not behind a
+   media query — which is why this block sits outside one.
+   The canvas case is worse than a layout quirk: animate() writes
+   cv.width = cv.clientWidth every frame, so once the element has been wide,
+   its intrinsic width pins the minimum and it can never shrink back. That is a
+   one-way ratchet; max-width:100% breaks it. */
+.table-scroll, .eq-scroll{min-width:0}
+/* Any control row of buttons must be able to wrap. A non-wrapping flex row is
+   the general form of the fault measured in the lattice at 320 px, where three
+   buttons summed to 306 px in a 292 px box and pushed the whole document. */
+.controls .ctrl{min-width:0}
+.controls .ctrl > .seg, .controls .ctrl[style*="display:flex"]{flex-wrap:wrap}
+.seg{flex-wrap:wrap}
+canvas.viz{min-width:0;max-width:100%}
+.panel{min-width:0}
+.ref-grid > *, .split > *, .lattice-grid > *, .ladder-grid > *{min-width:0}
+.papers{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
+/* long mono readouts must be allowed to break rather than push the page */
+.readout, .tier-note code{overflow-wrap:anywhere}
+
+@media (max-width:520px){
+  /* the canon and open-ruling card grids: a 252px track in a 292px content box
+     fits, but below that the track keeps its minimum and overflows. min() lets
+     the single column collapse to the container instead. */
+  #compendium [style*="minmax(252px"]{grid-template-columns:1fr !important}
+  .papers{grid-template-columns:1fr}
+  .paper{padding:18px 16px 16px}
+  .paper .glyph{font-size:30px;right:10px;top:6px}
+  .paper h3{font-size:16px;padding-right:32px}
+  .eq-panel{padding:22px 14px 18px}
+  .eq-panel::before{max-width:calc(100% - 28px)}
+  .eq{font-size:15px}
+  table.data th, table.data td{padding-right:10px}
+  .panel-head{padding:12px 14px;gap:10px}
+  .wrap{padding-left:12px;padding-right:12px}
+  /* Inline flex:0 0 auto on a control row beats the .ctrl.narrow rule above and
+     sizes the row to max-content — which is how three buttons summed to 306 px
+     inside a 292 px box. Below 520 px a control row takes the full width and
+     wraps inside itself instead. */
+  .controls .ctrl[style*="flex:0 0 auto"]{flex:1 1 100% !important}
+  .btn.mini{font-size:10px;padding:5px 9px}
+  /* the nav keeps only the brand at this width, so it must not reserve a row
+     for links that are display:none */
+  #tf-nav .wrap{gap:8px;flex-wrap:nowrap}
+  #tf-nav #palBtn{font-size:9px;padding:3px 6px;letter-spacing:0}
+  #tf-nav .brand{font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Measured at 320-414 px: the canon cards' category labels render at 9.5 px
+     in uppercase with .16em tracking, which is past legible on a phone, and the
+     "→ XIII" module links are 38x12 px tap targets. Both are compendium-wide
+     patterns, so they are fixed by shape rather than one at a time. */
+  #compendium div[style*="font-size:9.5px"]{font-size:10.5px !important;letter-spacing:.12em !important}
+  #compendium a[href^="#"]{display:inline-block;padding:7px 8px;margin:-7px -2px;min-height:30px;line-height:16px}
+}
+/* Tap targets for the in-card module links at every width: an inline anchor of
+   38x12 px is a miss on any touch screen, not only a narrow one. */
+@media (pointer:coarse){
+  #compendium a[href^="#"], .tier-note a[href^="#"]{display:inline-block;padding:6px 8px;margin:-6px -2px;min-height:30px}
+}
+body.frame-tau .rn{color:var(--amber)}
+body.frame-beat .rn{color:#E7C46B}
+.chip.fr-tau[aria-pressed="true"]{border-color:var(--amber);color:var(--amber)}
+.chip.fr-beat[aria-pressed="true"]{border-color:#E7C46B;color:#E7C46B}
+.dim-item{text-align:left;background:transparent;border:none;border-left:2px solid var(--hairline);padding:17px 20px;cursor:pointer;transition:border-color .25s,background .25s}
+.dim-item .dt{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--ivory-dim);transition:color .25s}
+.dim-item .dn{font-family:var(--grot);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-faint);margin-top:2px}
+.dim-item .dd{font-family:var(--serif);font-size:14.5px;color:var(--ivory-faint);margin-top:8px;line-height:1.55;max-width:40ch}
+.dim-item[aria-pressed="true"]{border-left-color:var(--amber);background:linear-gradient(90deg,rgba(245,168,60,.07),transparent)}
+.dim-item[aria-pressed="true"] .dt{color:var(--amber)}
+.dim-item[aria-pressed="true"] .dn{color:var(--cyan)}
+.dim-item:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.split.top{align-items:start}
+
+/* tables */
+table.data{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+table.data caption{caption-side:top;text-align:left;font-family:var(--grot);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-faint);padding-bottom:12px}
+table.data th{font-weight:400;text-align:left;color:var(--cyan);letter-spacing:.05em;border-bottom:1px solid var(--hairline);padding:8px 12px 10px 0;white-space:nowrap}
+table.data td{color:var(--ivory-dim);padding:10px 12px 10px 0;border-bottom:1px solid rgba(237,232,220,.06);white-space:nowrap}
+table.data td.err{color:var(--amber)}
+table.data tr.final td{color:var(--ivory)}
+table.data tr.final td.err{color:var(--cyan);text-shadow:0 0 14px rgba(89,214,201,.5)}
+.table-scroll{overflow-x:auto}
+.ref-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:start;margin-top:28px}
+@media(max-width:960px){.ref-grid{grid-template-columns:1fr}}
+
+/* master eq */
+.tier-note{font-family:var(--grot);font-size:11.5px;letter-spacing:.08em;color:var(--ivory-faint);margin-top:10px;line-height:1.6}
+/* .ctrl label and .panel-head are upper-cased, which also turns gamma into Gamma, omega into Omega
+   and "t" into "T". Symbols and live readouts keep their case. */
+.sym, .panel-head .readout{text-transform:none}
+.cpl{white-space:nowrap;margin-right:14px}
+.cpl input{width:5.2em;background:#0d1524;color:var(--amber);border:1px solid var(--hairline);border-radius:6px;padding:3px 6px;font-family:var(--mono);font-size:12px}
+.cpl input:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.tier-note a{color:var(--cyan);text-underline-offset:2px}
+.tier-note a:hover{color:var(--amber)}
+/* Modules V, VI, VIII-XII, XIV, XVI: prose runs the full column instead of a 64-74ch strip on the
+   left, matching the standalone module extracts. Drop a section from this list to restore the strip. */
+:is(#scramble,#gnss,#hydrogen,#cosmos,#master,#horizons,#attractor,#volume,#observatory) :is(p,.lede,.gr-list){max-width:none}
+:is(#scramble,#gnss,#hydrogen,#cosmos,#master,#horizons,#attractor,#volume,#observatory) .panel + .tier-note{margin-top:18px}
+.gr-list{list-style:none;margin:22px 0 0;display:grid;gap:12px;max-width:64ch}
+.gr-list li{padding-left:26px;position:relative;color:var(--ivory-dim);font-size:16px}
+.gr-list li::before{content:"";position:absolute;left:0;top:.62em;width:12px;height:1.5px;background:linear-gradient(90deg,var(--cyan),var(--amber))}
+
+/* lattice */
+.lattice-grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,6fr);gap:40px;align-items:start;margin-top:28px}
+@media(max-width:940px){.lattice-grid{grid-template-columns:1fr}}
+.scale-row{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 6px}
+.scale-cell{font-family:var(--mono);font-size:13px;color:var(--ivory-dim);border:1px solid var(--hairline);border-radius:8px;padding:9px 0;cursor:pointer;transition:all .18s;background:transparent;flex:1;min-width:44px;text-align:center}
+.scale-cell small{display:block;font-size:9px;color:var(--ivory-faint);letter-spacing:.08em;margin-top:2px}
+.scale-cell:hover{border-color:var(--cyan);color:var(--cyan)}
+.scale-cell.on{border-color:var(--amber);color:var(--amber);background:rgba(245,168,60,.09);box-shadow:0 0 18px rgba(245,168,60,.18)}
+.scale-cell:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* papers / compendium */
+.papers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:34px}
+.paper{border:1px solid var(--hairline);border-radius:12px;padding:22px 22px 20px;background:linear-gradient(160deg,var(--field-2),transparent 70%);transition:border-color .25s,transform .25s;position:relative;overflow:hidden}
+.paper:hover{border-color:var(--cyan-dim);transform:translateY(-3px)}
+.paper .pn{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.08em;margin-bottom:11px}
+.paper h3{font-size:17.5px;line-height:1.35;font-weight:600}
+.paper p{font-size:13.5px;line-height:1.6;color:var(--ivory-faint);margin:9px 0 0;max-width:none}
+.paper .glyph{position:absolute;right:14px;top:8px;font-family:var(--serif);font-style:italic;font-size:42px;color:rgba(89,214,201,.14)}
+
+.origin{border:1px solid var(--hairline);border-left:2px solid var(--amber);border-radius:0 12px 12px 0;padding:26px 30px;background:linear-gradient(90deg,rgba(245,168,60,.05),transparent 55%);margin-top:28px}
+.origin p{max-width:72ch}
+.origin .tagline{font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.06em;margin-bottom:13px}
+
+footer{border-top:1px solid var(--hairline);padding:54px 0 70px;font-family:var(--grot);font-size:12px;letter-spacing:.14em;color:var(--ivory-faint)}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:baseline}
+footer .disc{font-family:var(--serif);font-size:13.5px;letter-spacing:0;max-width:52ch;line-height:1.6}
+
+/* scroll progress: time elapsed through the document */
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:60;background:linear-gradient(90deg,var(--cyan),var(--amber));box-shadow:0 0 10px rgba(245,168,60,.5);pointer-events:none}
+.navlinks a.active{color:var(--amber)}
+/* section reveal (only when JS is live) */
+body.js section > .wrap{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+body.js section > .wrap.vis{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){body.js section > .wrap{opacity:1;transform:none;transition:none}}
+
+/* command console */
+#palette{position:fixed;inset:0;z-index:80;display:none;background:rgba(4,6,12,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#palette.open{display:flex;align-items:flex-start;justify-content:center;padding:12vh 18px 0}
+.pal-box{width:min(560px,100%);background:var(--field-2);border:1px solid var(--cyan-dim);border-radius:14px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 40px rgba(89,214,201,.12)}
+.pal-box input{width:100%;background:transparent;border:none;outline:none;color:var(--ivory);font-family:var(--mono);font-size:15px;padding:16px 18px;border-bottom:1px solid var(--hairline)}
+.pal-box input::placeholder{color:var(--ivory-faint)}
+.pal-list{max-height:46vh;overflow-y:auto}
+.pal-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 18px;cursor:pointer;font-family:var(--grot);font-size:13px;letter-spacing:.06em;color:var(--ivory-dim)}
+.pal-item .cat{font-family:var(--mono);font-size:10px;color:var(--ivory-faint);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.pal-item.sel{background:var(--field-3);color:var(--amber)}
+.pal-item.sel .cat{color:var(--cyan)}
+.pal-foot{display:flex;gap:16px;padding:9px 18px;border-top:1px solid var(--hairline);font-family:var(--mono);font-size:10px;color:var(--ivory-faint)}
+kbd{font-family:var(--mono);font-size:10px;color:var(--cyan);border:1px solid var(--hairline);border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:var(--field)}
+#palBtn{font-family:var(--mono);font-size:10.5px;color:var(--ivory-faint);background:transparent;border:1px solid var(--hairline);border-radius:6px;padding:4px 9px;cursor:pointer;white-space:nowrap;transition:color .2s,border-color .2s}
+#palBtn:hover{color:var(--cyan);border-color:var(--cyan-dim)}
+.key-hint{font-family:var(--mono);font-size:10.5px;color:var(--ivory-faint);letter-spacing:.04em;margin-top:10px}
+
+/* M3 source lattice */
+.m3-wrap{overflow-x:auto;padding:18px}
+.m3-grid{display:grid;grid-template-columns:repeat(13,minmax(52px,1fr));gap:0;min-width:720px;border:1px solid var(--hairline)}
+.m3-cell{
+  font-family:var(--mono);font-size:10.5px;color:var(--ivory-dim);
+  background:transparent;border:none;border-right:1px solid rgba(237,232,220,.09);border-bottom:1px solid rgba(237,232,220,.09);
+  padding:9px 3px;cursor:pointer;text-align:center;white-space:nowrap;transition:background .15s,color .15s;
+}
+.m3-cell:hover{color:var(--cyan);background:rgba(89,214,201,.06)}
+.m3-cell:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+.m3-cell.band{background:rgba(89,214,201,.045)}
+.m3-cell.bandL{border-left:2px double rgba(89,214,201,.55)}
+.m3-cell.bandR{border-right:2px double rgba(89,214,201,.55)}
+.m3-cell.a440{box-shadow:inset 0 0 0 1px rgba(245,168,60,.7)}
+.m3-cell.zeroSph{position:relative}
+.m3-cell.zeroSph::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;border:1px solid rgba(237,232,220,.55);background:transparent}
+.m3-cell:not(.zeroSph)::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;border:1px solid rgba(89,214,201,.30);background:radial-gradient(circle at 35% 35%, rgba(89,214,201,.45), rgba(89,214,201,.06))}
+.m3-cell{position:relative}
+.m3-key-zero,.m3-key-work{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:baseline;margin:0 2px}
+.m3-key-zero{border:1px solid rgba(237,232,220,.55)}
+.m3-key-work{border:1px solid rgba(89,214,201,.35);background:radial-gradient(circle at 35% 35%, rgba(89,214,201,.5), rgba(89,214,201,.08))}
+.m3-cell.rule{border-right:3px double rgba(237,232,220,.35)}
+.m3-cell.tonic{color:var(--amber);font-weight:500}
+
+.m3-cell.lit{background:rgba(245,168,60,.16);color:var(--amber);box-shadow:inset 0 0 0 1px rgba(245,168,60,.4)}
+.m3-cell.sel{background:rgba(245,168,60,.3);color:var(--field);font-weight:600;text-shadow:none}
+.m3-readout{font-family:var(--mono);font-size:11.5px;color:var(--ivory-dim);padding:12px 20px;border-top:1px solid var(--hairline);display:flex;gap:18px;flex-wrap:wrap}
+.m3-readout b{color:var(--amber);font-weight:500}
+.m3-readout .q{color:var(--cyan)}
+.m3-grid.m3-num .m3-cell{font-size:9.3px;letter-spacing:0;padding:9px 2px}
+
+
+/* live equation lines — panels recalculate with the module's current parameters */
+.eq-live{border-top:1px dashed var(--hairline);margin-top:16px;padding-top:12px;color:var(--cyan);font-size:14px;overflow-x:auto}
+.eq-live .katex{font-size:.98em}
+.eq-live::before{content:"live";font-family:var(--grot);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:7px}
+.txt-in{font-family:var(--mono);font-size:12.5px;color:var(--ivory);background:var(--field-3);border:1px solid var(--hairline);border-radius:8px;padding:8px 12px;width:100%;outline:none}
+.txt-in:focus{border-color:var(--cyan)}
+#helpBox{position:fixed;inset:0;z-index:80;display:none;background:rgba(4,6,12,.66);backdrop-filter:blur(6px)}
+#helpBox.open{display:flex;align-items:center;justify-content:center;padding:20px}
+.help-card{width:min(460px,100%);background:var(--field-2);border:1px solid var(--cyan-dim);border-radius:14px;padding:26px 30px}
+.help-card h3{font-family:var(--grot);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+.help-card .row{display:flex;justify-content:space-between;gap:16px;font-family:var(--grot);font-size:13px;color:var(--ivory-dim);padding:7px 0;border-bottom:1px solid rgba(237,232,220,.06)}
+.icv-out{font-family:var(--mono);font-size:11.5px;color:var(--cyan);margin-top:10px;letter-spacing:.04em}
+.icv-out b{color:var(--amber);font-weight:500}
+@keyframes gradientBG{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hl-panel{position:relative}
+.hl-panel::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;z-index:2;
+  background:linear-gradient(-65deg,var(--cyan),#c850c8,var(--amber),var(--cyan));
+  background-size:400% 400%;animation:gradientBG 45s ease infinite}
+@media(prefers-reduced-motion:reduce){.hl-panel::before{animation:none}}
+.qreg{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;border-top:1px solid var(--hairline)}
+.qreg .qk{font-family:var(--mono);font-size:10.5px;color:var(--ivory-dim);border:1px solid var(--hairline);border-radius:6px;padding:5px 9px;cursor:pointer;background:transparent;transition:all .15s}
+.qreg .qk small{color:var(--ivory-faint);margin-right:5px}
+.qreg .qk:hover{border-color:var(--cyan);color:var(--cyan)}
+.qreg .qk.hit{border-color:var(--amber);color:var(--amber);background:rgba(245,168,60,.12);box-shadow:0 0 14px rgba(245,168,60,.25)}
+.qreg .qk.zero{border-style:dashed;color:var(--ivory-faint)}
+.qreg .qk.zero.hit{border-color:var(--ivory);color:var(--ivory);background:rgba(237,232,220,.08)}
+</style>
+</head>
+<body>
+<div class="wrap" style="padding-top:28px">
+  <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ivory-faint)">Chronowave Dynamics &middot; Temporal Engine &middot; standalone module extract</div>
+</div>
+<section id="attractor">
+  <div class="wrap">
+    <div class="eyebrow"><span class="rn">XII</span> The attractor</div>
+    <h2>Where it all began: <em>pulses on a Lorenz attractor</em></h2>
+    <p class="lede">The origin instrument, rebuilt live. In the DAW experiments, wave pulses were plotted on a
+      Lorenz attractor with Rayleigh and Prandtl values &mdash; and the &ldquo;orbital state jumps&rdquo; that
+      seeded the whole framework are the trajectory's lobe transitions. Tune &rho; and &sigma;, perturb the
+      state, and count the jumps.</p>
+    <div class="eq-panel" data-tag="Lorenz system">
+      <div class="eq eq-scroll" data-tex="\dot{x} = \sigma(y - x), \qquad \dot{y} = x(\rho - z) - y, \qquad \dot{z} = xy - \beta z"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span>Trajectory &middot; cyan lobe x&lt;0 &middot; amber lobe x&gt;0</span>
+        <span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn mini" id="perturbBtn">Perturb</button>
+          <button class="btn mini ghost" id="tickBtn" aria-pressed="false">Jump ticks: off</button>
+          <button class="btn mini" id="loTwin">Twin +1e-6</button>
+          <button class="btn mini ghost" id="loCsv">Export trajectory</button>
+          <span class="readout">jumps: <b id="loJumps">0</b> &middot; <b id="loRate">&mdash;</b>/sim-s &middot; &Delta;twin <b id="loSep">&mdash;</b> &middot; <span id="loLyap">&mdash;</span></span>
+        </span>
+      </div>
+      <canvas class="viz" id="lorenzCanvas" height="460" aria-label="Live Lorenz attractor trajectory with lobe-colored trail"></canvas>
+      <div class="controls">
+        <div class="ctrl">
+          <label for="loRho">Rayleigh &rho; <output id="loRhoOut">28.0</output></label>
+          <input type="range" id="loRho" min="4" max="60" step="0.1" value="28">
+        </div>
+        <div class="ctrl">
+          <label for="loSig">Prandtl &sigma; <output id="loSigOut">10.0</output></label>
+          <input type="range" id="loSig" min="2" max="24" step="0.1" value="10">
+        </div>
+        <div class="ctrl">
+          <label for="loBeta">&beta; <output id="loBetaOut">2.67</output></label>
+          <input type="range" id="loBeta" min="0.5" max="6" step="0.0001" value="2.6667">
+        </div>
+        <div class="ctrl narrow">
+          <label for="loDrive">Harmonic drive <output id="loDriveOut">0.00</output></label>
+          <input type="range" id="loDrive" min="0" max="4" step="0.05" value="0">
+        </div>
+        <div class="ctrl narrow" style="flex:1 1 220px">
+          <label>Drive shape &middot; from Module XIII</label>
+          <span class="readout" id="loM3Drive" style="display:inline-block;margin-top:8px">M3 stack interval &middot; set in Module XIII</span>
+        </div>
+        <div class="ctrl narrow">
+          <label for="loFold">Time fold <output id="loFoldOut">0.00</output></label>
+          <input type="range" id="loFold" min="0" max="0.35" step="0.005" value="0">
+        </div>
+        <div class="ctrl narrow" style="flex:0 0 auto;display:flex;align-items:flex-end">
+          <button class="chip" id="loTfe" aria-pressed="false" title="Couple rho to the field equation's residual">TFE couple &middot; &rho; + 3&middot;res</button>
+        </div>
+      </div>
+    </div>
+    <p class="tier-note">At the default &sigma; = 10, &beta; = 8/3 the fixed points lose stability at
+      &rho; &asymp; 24.7; on screen the trajectory settles onto one of them below about &rho; = 23
+      &mdash; a wavefunction that never pops &mdash; and can keep jumping for a long time just under the
+      threshold. Move &sigma; or &beta; and the threshold moves with them. Above it, chaos: consistent, sudden lobe transitions that stabilize
+      without collapsing, exactly the behavior the studio metering showed as long as frequency moves stayed
+      within 100 cents. A perturbation kicks the state the way an intrinsic detune did.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div style="color:var(--ivory);letter-spacing:.3em;text-transform:uppercase;margin-bottom:10px">Chronowave <span style="color:var(--amber)">Dynamics</span></div>
+      <div>Framework &amp; papers &middot; Anthony M. Vargas &amp; Aethus Iqbal-Samir &middot; 2024&ndash;2026</div>
+    </div>
+    <div class="disc">Module XII &middot; The attractor, extracted standalone from the full Temporal Engine compendium on 2026-11-14. A speculative theoretical framework, presented as proposed in the source papers and prototypes.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* STUB of lat (Module IV) for the standalone extract: provides lat.actives(), the sorted list of selected scale degrees, which sets the number of wings (sectors) of the attractor. The selection is fixed at the lattice start-up identity scale {0,2,3,4,6,8,10} (7 degrees), because the scale editor of Module IV is not present. */
+const lat = {
+  mask: new Set([0, 2, 3, 4, 6, 8, 10]),
+  actives(){ return [...this.mask].sort((a, b) => a - b); }
+};
+/* STUB of M3 (Module XIII) for the standalone extract: provides M3.stackInt (the stack interval that shapes the drive, fixed at the Module XIII start-up value of 4 semitones) and M3.f(semi) (the frequency of a semitone above the source note, with the A4 control fixed at its start-up value of 440 Hz, same formula as the page). The A4 and stack-interval controls of Module XIII are not present. */
+const M3 = {
+  stackInt: 4,
+  a4: 440,
+  f(semi){ return this.a4 * Math.pow(2, -9/12) * Math.pow(2, semi/12); }
+};
+/* STUB of tfe.terms (Module X) for the standalone extract: the "TFE couple" button adds 3 x tfe.terms().res to rho. The page keeps only the small tfe object; the field-equation solver of Module X is not present, so terms() reports a field that is exactly balanced (res = 0) and the coupling adds nothing to rho. It is attached after the module has declared the small tfe object (the stubs sit above that declaration). */
+queueMicrotask(() => {
+  tfe.terms = function(){ this.res = 0; return { res: 0 }; };
+});
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const CYAN = "#59D6C9", AMBER = "#F5A83C", IVORY = "#EDE8DC";
+function renderTex(el, tex, display){
+  if (window.katex){
+    try { katex.render(tex, el, {displayMode: display !== false, throwOnError: false}); return; }
+    catch(e){}
+  }
+  el.innerHTML = '<span class="katex-fallback"></span>';
+  el.firstChild.textContent = tex;
+}
+document.querySelectorAll(".eq[data-tex]").forEach(el => renderTex(el, el.dataset.tex));
+function fitCanvas(cv){
+  /* THE WHITEOUT BUG LIVED HERE: this used to read h from the height
+     attribute and then write cv.height = h*dpr \u2014 which IS that attribute.
+     On DPR-2 devices every call doubled the canvas (300\u2192600\u2192...) until it
+     passed the browser's max canvas area and rendering silently stopped:
+     the hyper-expansion and the blankouts were one bug. The design height
+     is now cached once and the resize is idempotent. */
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (!cv.dataset.designH) cv.dataset.designH = cv.getAttribute("height") || cv.clientHeight || 300;
+  const w = cv.clientWidth, h = +cv.dataset.designH;
+  const bw = Math.round(w * dpr), bh = Math.round(h * dpr);
+  if (cv.width !== bw) cv.width = bw;
+  if (cv.height !== bh) cv.height = bh;
+  cv.style.height = h + "px";
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return {ctx, w, h};
+}
+const animators = [];
+function animate(cv, draw){
+  /* Resilient loop: an exception in one frame must never kill the rAF chain
+     (the old behavior \u2014 one NaN-radius throw blanked the module until
+     reload: the reported whiteouts). Errors are caught, context state is
+     restored so dirt can't leak into later frames, the first few are logged
+     (+ collected on window.__frameErrs for the harness). Zero-size boxes are
+     skipped rather than fitted; height changes now also trigger refit. */
+  let st = null, visible = true, t0 = performance.now(), errN = 0;
+  const io = new IntersectionObserver(en => { visible = en[0].isIntersecting; }, {rootMargin:"140px"});
+  io.observe(cv);
+  function frame(now){
+    if (visible && cv.clientWidth > 0){
+      /* designH is also watched: a view that asks for a new height from inside
+         its draw (VIII's legacy "Two clocks · Z" asks for 472/664) used to be
+         clipped at the old height, because clientHeight still matched st.h */
+      if (!st || st.w !== cv.clientWidth || st.h !== cv.clientHeight ||
+          (cv.dataset.designH && st.h !== +cv.dataset.designH)) st = fitCanvas(cv);
+      try{
+        st.ctx.save();
+        draw(st.ctx, st.w, st.h, reduced ? 0 : (now - t0) / 1000);
+        st.ctx.restore();
+      }catch(e2){
+        try{ st.ctx.restore(); }catch(e3){}
+        errN++;
+        (window.__frameErrs = window.__frameErrs || []).push(cv.id + ": " + e2.message);
+        if (errN <= 3) console.warn("frame error on #" + cv.id, e2);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  animators.push(() => { st = null; });
+}
+window.addEventListener("resize", () => animators.forEach(f => f()));
+const AC = { ctx: null,
+  get(){
+    this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (this.ctx.state === "suspended") this.ctx.resume();
+    return this.ctx;
+  }
+};
+const lo = {
+  x: 0.9, y: 0, z: 20, trail: [], jumps: 0, lobe: 1, tick: false,
+  jumpTimes: [], hist: [], simT: 0, histSkip: 0,
+  rX: -0.32, rY: 0.55, dragging: false, lx: 0, ly: 0,
+  rAdj: 0, sector: 0,
+  force(){
+    /* the drive shape IS Module XIII: the selected cell's interval stack, at its real
+       frequency ratios (folded to O(0.1 Hz) so the flow can follow) */
+    const amp = +this.el.drive.value;
+    if (amp <= 0) return 0;
+    const base = 0;                     /* stacks from the root, per the lattice's law */
+    let step = 4;                                    /* 0 is a real choice (unison), so no falsy test */
+    try { if (M3.stackInt != null) step = M3.stackInt; } catch(e){}   /* M3 is declared further down */
+    let F = 0;
+    for (let k2 = 0; k2 < 4; k2++)
+      F += Math.sin(2*Math.PI*0.14*Math.pow(2, (base + k2*step)/12 - Math.floor(base/12))*this.simT);
+    return amp*F/2;
+  },
+  el: {
+    rho: document.getElementById("loRho"), rhoOut: document.getElementById("loRhoOut"),
+    sig: document.getElementById("loSig"), sigOut: document.getElementById("loSigOut"),
+    beta: document.getElementById("loBeta"), betaOut: document.getElementById("loBetaOut"),
+    jumps: document.getElementById("loJumps")
+  },
+  upd(){
+    this.el.rhoOut.value = (+this.el.rho.value).toFixed(1);
+    this.el.sigOut.value = (+this.el.sig.value).toFixed(1);
+    this.el.betaOut.value = (+this.el.beta.value).toFixed(2);
+  },
+  rk4(st, dt){
+    const s = +this.el.sig.value, b = +this.el.beta.value;
+    const r = +this.el.rho.value + this.rAdj;
+    const F = this.force();
+    const f = (x, y, z) => [s*(y - x) + F, x*(r - z) - y, x*y - b*z];
+    const k1 = f(st.x, st.y, st.z);
+    const k2 = f(st.x + k1[0]*dt/2, st.y + k1[1]*dt/2, st.z + k1[2]*dt/2);
+    const k3 = f(st.x + k2[0]*dt/2, st.y + k2[1]*dt/2, st.z + k2[2]*dt/2);
+    const k4 = f(st.x + k3[0]*dt, st.y + k3[1]*dt, st.z + k3[2]*dt);
+    st.x += dt/6*(k1[0] + 2*k2[0] + 2*k3[0] + k4[0]);
+    st.y += dt/6*(k1[1] + 2*k2[1] + 2*k3[1] + k4[1]);
+    st.z += dt/6*(k1[2] + 2*k2[2] + 2*k3[2] + k4[2]);
+  },
+  step(dt){
+    this.rk4(this, dt);
+    if (this.twin){
+      this.rk4(this.twin, dt);
+      this.twinTrail.push([this.twin.x, this.twin.y, this.twin.z, this.sector || 0]);   /* the sector is display bookkeeping: tag the twin with the main trail's */
+      if (this.twinTrail.length > 900) this.twinTrail.shift();
+      const sep = Math.hypot(this.x - this.twin.x, this.y - this.twin.y, this.z - this.twin.z);
+      document.getElementById("loSep").textContent = sep < 1e-4 ? sep.toExponential(1) : sep.toFixed(2);
+      /* THE INTEGRATOR, ON TRIAL AGAINST A KNOWN NUMBER.
+         Two trajectories separated by d0 diverge as d(t) = d0 e^(lambda t), so
+         lambda = ln(d/d0)/(t - t0) while the growth is still exponential (i.e.
+         before the separation saturates on the attractor's own diameter, ~40).
+         At the canonical sigma=10, rho=28, beta=8/3 the largest Lyapunov
+         exponent is 0.9056 \u2014 a published constant this module did not have to
+         be told. Measuring it is a check the integrator can FAIL: if the RK4
+         step or the drive were wrong, the number would not come back. */
+      if (this.twinT0 === undefined){ this.twinT0 = this.simT; this.twinD0 = Math.max(1e-12, sep); }
+      const el = Math.log(sep/this.twinD0)/Math.max(1e-9, this.simT - this.twinT0);
+      const canon = Math.abs(+this.el.sig.value - 10) < 0.3 &&
+                    Math.abs(+this.el.rho.value - 28) < 0.5 &&
+                    Math.abs(+this.el.beta.value - 8/3) < 0.05 &&
+                    +this.el.drive.value === 0 && !this.tfeOn;
+      /* saturation latches: once the twins are a lobe apart the separation wanders back under 12
+         while the clock keeps running, and the estimate then decayed toward zero under a verdict */
+      if (sep >= 12) this.twinSat = true;
+      const usable = !this.twinSat && sep > this.twinD0*20 && (this.simT - this.twinT0) > 1;
+      const lEl = document.getElementById("loLyap");
+      if (lEl) lEl.innerHTML = !usable
+        ? "<span style='opacity:.55'>" + (this.twinSat ? "saturated \u2014 re-release the twin" : sep < this.twinD0*0.5 ? "shrinking \u2014 the twins converge (no chaos at these settings)" : "growing\u2026") + "</span>"
+        : "\u03BB \u2248 <b>" + el.toFixed(3) + "</b>" + (canon
+            ? (Math.abs(el/0.9056 - 1) < 0.15
+                ? " <span style='color:var(--cyan)'>\u2713 vs 0.9056 published</span>" +
+                  " <span style='opacity:.55'>(finite-time estimate from one release; releases scatter \u00B115\u0025)</span>"
+                : " <span style='color:var(--amber)'>vs 0.9056 published \u2014 off by " + (el - 0.9056).toFixed(3) +
+                  ", beyond the \u00B115\u0025 scatter a single release shows</span>")
+            : " <span style='opacity:.6'>(off-canonical \u03C3\u03C1\u03B2 \u2014 no published value to check)</span>");
+      if (!isFinite(sep) || sep > 200){ this.twin = null; this.twinTrail.length = 0; this.twinT0 = undefined; }
+    }
+    if (!isFinite(this.x + this.y + this.z)){ this.x = 0.9; this.y = 0; this.z = 20; this.trail.length = 0; }
+    /* orbital jump: lobe transition with hysteresis */
+    const newLobe = this.x > 2 ? 1 : this.x < -2 ? -1 : this.lobe;
+    if (newLobe !== this.lobe){
+      this.lobe = newLobe; this.jumps++;
+      this.sector = (this.sector + 1) % Math.max(1, lat.actives().length);
+      this.el.jumps.textContent = this.jumps;
+      /* The rate used to be counted in WALL CLOCK: jumpTimes held
+         performance.now() and the readout was jumps per real minute. That
+         makes a property of the attractor depend on the device \u2014 a phone
+         rendering at 30 fps integrates half as much per second as a desktop at
+         60, so the same system reports half the rate. The count is now kept in
+         SIMULATION time, which advances by a fixed dt per step regardless of
+         how fast the frames arrive, and the readout is jumps per unit sim-time.
+         Same number on any machine, which is what a measurement has to be. */
+      this.jumpTimes.push(this.simT);
+      while (this.jumpTimes.length && this.simT - this.jumpTimes[0] > 60) this.jumpTimes.shift();
+      if (this.tick){
+        const ctx = AC.get(), now = ctx.currentTime;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.09, now);
+        g.gain.exponentialRampToValueAtTime(0.0004, now + 0.09);
+        g.connect(ctx.destination);
+        const o = ctx.createOscillator();
+        o.type = "sine"; o.frequency.value = newLobe > 0 ? 987.77 : 659.26;
+        o.connect(g); o.start(now); o.stop(now + 0.1);
+      }
+    }
+    this.trail.push([this.x, this.y, this.z, this.lobe, this.sector || 0]);
+    if (this.trail.length > 2600) this.trail.shift();
+    this.dwell = this.dwell || {};      /* time spent unfolded into each wing, not a count of visits (visits are round-robin, so equal by construction) */
+    this.dwell[this.sector || 0] = (this.dwell[this.sector || 0] || 0) + dt;
+    this.simT += dt;
+    if (++this.histSkip >= 3){
+      this.histSkip = 0;
+      this.hist.push([this.simT, this.x, this.y, this.z, this.lobe]);
+      if (this.hist.length > 4000) this.hist.shift();
+    }
+  }
+};
+lo.twin = null;
+lo.twinTrail = [];
+lo.keepAlive = function(){
+  if (reduced) return;
+  const now = performance.now();
+  if (this.lastStep === undefined){ this.lastStep = now; return; }
+  const n = Math.min(300, Math.floor((now - this.lastStep)/1000*540));
+  if (n > 0){ for (let i = 0; i < n; i++) this.step(0.004); this.lastStep += n/540*1000; }
+  if (now - this.lastStep > 600) this.lastStep = now;       /* a long gap (hidden tab) is dropped, not replayed */
+};
+document.getElementById("loTwin").addEventListener("click", () => {
+  lo.twin = {x: lo.x + 1e-6, y: lo.y, z: lo.z};
+  lo.twinT0 = undefined; lo.twinD0 = undefined; lo.twinSat = false;
+  lo.twinTrail.length = 0;
+  document.getElementById("loSep").textContent = "1.0e-6";
+});
+document.getElementById("loCsv").addEventListener("click", () => {
+  let csv = "t,x,y,z,lobe\n";
+  lo.hist.forEach(r => { csv += r[0].toFixed(4)+","+r[1].toFixed(5)+","+r[2].toFixed(5)+","+r[3].toFixed(5)+","+r[4]+"\n"; });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+  a.download = "lorenz-trajectory.csv";
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+lo.el.drive = document.getElementById("loDrive");
+lo.el.driveOut = document.getElementById("loDriveOut");
+lo.el.drive.addEventListener("input", () => { lo.el.driveOut.value = (+lo.el.drive.value).toFixed(2); });
+lo.el.fold = document.getElementById("loFold");
+lo.el.foldOut = document.getElementById("loFoldOut");
+lo.el.fold.addEventListener("input", () => { lo.el.foldOut.value = (+lo.el.fold.value).toFixed(3); });
+document.getElementById("loTfe").addEventListener("click", function(){
+  lo.tfeOn = !lo.tfeOn;
+  this.setAttribute("aria-pressed", String(lo.tfeOn));
+});
+const loCv3 = document.getElementById("lorenzCanvas");
+loCv3.style.cursor = "grab";
+loCv3.style.touchAction = "none";
+loCv3.addEventListener("pointerdown", e => { lo.dragging = true; lo.lx = e.clientX; lo.ly = e.clientY; loCv3.setPointerCapture(e.pointerId); loCv3.style.cursor = "grabbing"; });
+loCv3.addEventListener("pointermove", e => {
+  if (!lo.dragging) return;
+  lo.rY += (e.clientX - lo.lx)*0.007;
+  lo.rX = Math.max(-1.4, Math.min(1.4, lo.rX + (e.clientY - lo.ly)*0.007));
+  lo.lx = e.clientX; lo.ly = e.clientY;
+});
+["pointerup","pointercancel"].forEach(ev => loCv3.addEventListener(ev, () => { lo.dragging = false; loCv3.style.cursor = "grab"; }));
+["rho","sig","beta"].forEach(k => lo.el[k].addEventListener("input", () => lo.upd()));
+lo.upd();
+document.getElementById("perturbBtn").addEventListener("click", () => {
+  lo.y += 6; lo.x += 2;
+  if (lo.twin){ lo.twin.y += 6; lo.twin.x += 2; }   /* same kick, or the separation jumps to 6 and reads as a Lyapunov exponent of 5 */
+});
+const tickBtn = document.getElementById("tickBtn");
+tickBtn.addEventListener("click", () => {
+  lo.tick = !lo.tick;
+  if (lo.tick) AC.get();
+  tickBtn.textContent = "Jump ticks: " + (lo.tick ? "on" : "off");
+  tickBtn.setAttribute("aria-pressed", String(lo.tick));
+  tickBtn.classList.toggle("live", lo.tick);
+});
+if (reduced){ for (let i = 0; i < 2600; i++) lo.step(0.004); }
+animate(document.getElementById("lorenzCanvas"), (ctx, w, h, t) => {
+  if (lo.tfeOn) lo.rAdj = 3 * tfe.terms(performance.now()/1000).res; else lo.rAdj = 0;
+  lo.keepAlive();
+  /* jump rate over the window actually observed (at most 60 sim-s), refreshed every frame: it used to be
+     written only when a jump happened, so it froze at its last value once the trajectory settled, and
+     it divided by the span between the first and last jump instead of the window (2 jumps read 0.82). */
+  while (lo.jumpTimes.length && lo.simT - lo.jumpTimes[0] > 60) lo.jumpTimes.shift();
+  document.getElementById("loRate").textContent = lo.simT > 5 ? (lo.jumpTimes.length/Math.min(60, lo.simT)).toFixed(2) : "\u2014";
+  ctx.clearRect(0, 0, w, h);
+  const r = +lo.el.rho.value + lo.rAdj;
+  const kW = Math.max(1, lat.actives().length);
+  const foldK = +lo.el.fold.value;
+  const ext = Math.max(26, r*0.95);
+  /* the fold leaves coordinates alone inside |v| = pi/(2 fs). fs used to be fixed at foldK*0.35, which
+     left the attractor (extent about 25) untouched for the lower half of the slider while the status
+     line said "folded". It is now tied to the view extent, so the slider acts from its first step;
+     the old maximum sits at mid-slider. */
+  const fs = foldK <= 0 ? 0 : Math.PI/(2*ext)*(1 + 2*foldK/0.35);
+  const foldF = v => fs <= 0 ? v : Math.asin(Math.sin(v*fs))/fs;
+  const S = Math.min(w, h) / (2.6*ext);
+  const cx = w/2, cy = h/2;
+  const cyr = Math.cos(lo.rY), syr = Math.sin(lo.rY);
+  const cxr = Math.cos(lo.rX), sxr = Math.sin(lo.rX);
+  const P3L = (x, y, z) => {
+    /* center the attractor: z rides around r-1 */
+    const X0 = x, Y0 = z - (r - 1), Z0 = y;
+    let X = X0*cyr - Z0*syr, Z = X0*syr + Z0*cyr;
+    let Y = Y0*cxr - Z*sxr; Z = Y0*sxr + Z*cxr;
+    const sc = 3.2/(3.2 + Z/ext);
+    return [cx + X*S*sc, cy - Y*S*sc, Z, sc];
+  };
+  /* temporal axis tripod: T1 (x), T2 (depth), T3 (up) */
+  const O3 = P3L(-ext, -12, 0), AX = P3L(ext*0.4 - ext, -12, 0), AY = P3L(-ext, ext*0.55 - 12, 0), AZ = P3L(-ext, -12, ext*0.5);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(89,214,201,.4)";
+  ctx.beginPath(); ctx.moveTo(O3[0], O3[1]); ctx.lineTo(AX[0], AX[1]); ctx.stroke();
+  ctx.strokeStyle = "rgba(245,168,60,.4)";
+  ctx.beginPath(); ctx.moveTo(O3[0], O3[1]); ctx.lineTo(AY[0], AY[1]); ctx.stroke();
+  ctx.strokeStyle = "rgba(237,232,220,.35)";
+  ctx.beginPath(); ctx.moveTo(O3[0], O3[1]); ctx.lineTo(AZ[0], AZ[1]); ctx.stroke();
+  ctx.font = "italic 12px 'STIX Two Text', serif";
+  ctx.fillStyle = "rgba(89,214,201,.7)"; ctx.fillText("T\u2081", AX[0] + 5, AX[1]);
+  ctx.fillStyle = "rgba(245,168,60,.7)"; ctx.fillText("T\u2082", AY[0] + 5, AY[1]);
+  ctx.fillStyle = "rgba(237,232,220,.6)"; ctx.fillText("T\u2083", AZ[0] + 5, AZ[1] - 4);
+  /* the trail, depth-cued; each lobe excursion unfolds into its own sector of the k-wing rosette */
+  const secXY = (x, y, sec) => {
+    if (kW <= 2) return [x, y];
+    const a2 = 2*Math.PI*sec/kW;
+    return [x*Math.cos(a2) - y*Math.sin(a2), x*Math.sin(a2) + y*Math.cos(a2)];
+  };
+  const n = lo.trail.length;
+  for (let i = 1; i < n; i++){
+    const a = lo.trail[i-1], b = lo.trail[i];
+    if (kW > 2 && a[4] !== b[4]) continue;      /* no seam strokes across sector jumps */
+    const age = i/n;
+    const [ax2, ay2] = secXY(foldF(a[0]), foldF(a[1]), a[4] || 0);
+    const [bx2, by2] = secXY(foldF(b[0]), foldF(b[1]), b[4] || 0);
+    const pa = P3L(ax2, ay2, foldF(a[2] - (r-1)) + (r-1)), pb = P3L(bx2, by2, foldF(b[2] - (r-1)) + (r-1));
+    const depthA = (pb[3] - 0.86)/0.4;
+    ctx.strokeStyle = b[3] > 0
+      ? `rgba(245,168,60,${(0.05 + 0.55*age) * Math.max(0.3, Math.min(1, 0.5 + depthA))})`
+      : `rgba(89,214,201,${(0.05 + 0.55*age) * Math.max(0.3, Math.min(1, 0.5 + depthA))})`;
+    ctx.lineWidth = (0.7 + age*1.1) * pb[3];
+    ctx.beginPath(); ctx.moveTo(pa[0], pa[1]); ctx.lineTo(pb[0], pb[1]); ctx.stroke();
+  }
+  /* the twin */
+  if (lo.twin && lo.twinTrail.length > 1){
+    ctx.strokeStyle = "rgba(237,232,220,.45)"; ctx.lineWidth = 1;
+    ctx.beginPath();
+    /* the same rosette rotation and fold as the main trail. Drawn unrotated, the twin sat 38-178 px
+       from the point it was shadowing at the default 7-wing basis, with the true separation under 1e-4 */
+    const tmap = p => { const [tx, ty] = secXY(foldF(p[0]), foldF(p[1]), p[3] || 0); return P3L(tx, ty, foldF(p[2] - (r-1)) + (r-1)); };
+    let prevSec = null;
+    lo.twinTrail.forEach((p, i) => {
+      const q = tmap(p), seam = kW > 2 && prevSec !== null && prevSec !== (p[3] || 0);
+      prevSec = p[3] || 0;
+      (i === 0 || seam) ? ctx.moveTo(q[0], q[1]) : ctx.lineTo(q[0], q[1]);
+    });
+    ctx.stroke();
+    const tp = lo.twinTrail[lo.twinTrail.length - 1];
+    const tq = tmap(tp);
+    ctx.fillStyle = "rgba(237,232,220,.95)";
+    ctx.beginPath(); ctx.arc(tq[0], tq[1], 2.8, 0, 7); ctx.fill();
+  }
+  if (n){
+    const p = lo.trail[n-1];
+    const [hx2, hy2] = secXY(foldF(p[0]), foldF(p[1]), p[4] || 0);
+    const hp = P3L(hx2, hy2, foldF(p[2] - (r-1)) + (r-1));
+    ctx.fillStyle = IVORY;
+    ctx.shadowColor = p[3] > 0 ? AMBER : CYAN; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.arc(hp[0], hp[1], 3.6*hp[3], 0, 7); ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  /* fixed points at (+-q, +-q, r-1) */
+  const b3 = +lo.el.beta.value;
+  if (r > 1){
+    const q = Math.sqrt(b3*(r - 1));
+    for (const sgn of [-1, 1]) for (let sc2 = 0; sc2 < (kW > 2 ? kW : 1); sc2++){   /* one cross per wing, as the trail has */
+      const [fx, fy] = secXY(foldF(sgn*q), foldF(sgn*q), sc2);
+      const fp = P3L(fx, fy, r - 1);
+      ctx.strokeStyle = "rgba(237,232,220,.4)";
+      ctx.beginPath(); ctx.moveTo(fp[0]-4, fp[1]); ctx.lineTo(fp[0]+4, fp[1]);
+      ctx.moveTo(fp[0], fp[1]-4); ctx.lineTo(fp[0], fp[1]+4); ctx.stroke();
+    }
+  }
+  /* status line */
+  ctx.fillStyle = "rgba(237,232,220,.4)"; ctx.font = "10.5px 'IBM Plex Mono', monospace";
+  let status = "drag to rotate \u00B7 " + kW + "-wing (intervals in basis)";
+  if (foldK > 0) status += " \u00B7 folded " + foldK.toFixed(2);
+  if (+lo.el.drive.value > 0) status += " \u00B7 M3-driven";
+  if (lo.tfeOn) status += " \u00B7 \u03C1 " + (lo.rAdj >= 0 ? "+" : "") + lo.rAdj.toFixed(2) + " from TFE";
+  const dEl = document.getElementById("loM3Drive");
+  if (dEl && typeof M3 !== "undefined"){
+    dEl.textContent = "stack " + (M3.stackInt ?? 4) + " semis from \u27E61\u27E7 \u00B7 " + M3.f(0).toFixed(1) + " Hz";
+  }
+  ctx.fillText(status, 16, h - 14);
+  if (kW > 2 && lo.dwell){
+    ctx.font = "9px 'IBM Plex Mono', monospace";
+    let mxd = 1e-9;
+    for (let s2 = 0; s2 < kW; s2++) mxd = Math.max(mxd, lo.dwell[s2] || 0);
+    for (let s2 = 0; s2 < kW; s2++){
+      const bh2 = 40*(lo.dwell[s2] || 0)/mxd;        /* normalised to the longest wing: the old fixed gain pinned every bar at full after ~14 visits */
+      const bx2 = w - 20 - (kW - s2)*12;
+      ctx.fillStyle = "rgba(89,214,201,.6)";
+      ctx.fillRect(bx2, h - 18 - bh2, 8, bh2);
+    }
+    ctx.fillStyle = "rgba(237,232,220,.45)";
+    ctx.fillText("wing dwell \u00B7 time", w - 20 - kW*12 - 24, h - 8);
+  }
+});
+const tfe = {
+  el: {}, res: 0,
+  gains: [1,1,1,1,1,1,1,1], mutes: [false,false,false,false,false,false,false,false],
+  flow: [], probeTrail: []
+};
+const LIVE = [];
+function liveEq(tag, fn){
+  const panel = document.querySelector('.eq-panel[data-tag="' + tag + '"]');
+  if (!panel) return;
+  const d = document.createElement("div");
+  d.className = "eq-live eq-scroll";
+  panel.appendChild(d);
+  LIVE.push({d, fn});
+}
+let liveTimer = null;
+function liveNow(){
+  LIVE.forEach(item => {
+    /* re-render only when the line changed: an unchanged KaTeX rebuild every heartbeat
+       snapped a sideways-scrolled row back to its start */
+    try { const tex = item.fn(); if (tex !== item.tex){ renderTex(item.d, tex); item.tex = tex; } item.d.dataset.err = ""; }
+    catch(e){ if (item.d.dataset.err !== "1"){ item.d.dataset.err = "1"; item.d.textContent = "\u2026"; item.tex = null; } }
+  });
+}
+function refreshLive(){
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(liveNow, 70);
+}
+setInterval(liveNow, 1200);
+liveEq("Lorenz system", () => {
+  /* the state the integrator holds now, with the rho it actually uses (slider + TFE coupling) */
+  const r = +lo.el.rho.value + (lo.rAdj || 0), s = +lo.el.sig.value, b = +lo.el.beta.value;
+  const x = lo.x, y = lo.y, z = lo.z, n = v => (v < 0 ? "(" + v.toFixed(2) + ")" : v.toFixed(2));
+  const q = r > 1 ? Math.sqrt(b*(r - 1)) : 0;
+  return String.raw`\dot x = ${s.toFixed(1)}\,(${n(y)}-${n(x)}) = ${(s*(y - x)).toFixed(2)},\quad \dot y = ${n(x)}\,(${r.toFixed(2)}-${n(z)})-${n(y)} = ${(x*(r - z) - y).toFixed(2)},\quad \dot z = ${n(x)}\cdot${n(y)}-${b.toFixed(2)}\cdot${n(z)} = ${(x*y - b*z).toFixed(2)},\qquad x^{*} = \pm\sqrt{\beta(\rho-1)} = \pm${q.toFixed(2)},\quad \text{jumps} = ${lo.jumps}`;
+});
+document.addEventListener("input", refreshLive, {passive:true});
+document.addEventListener("click", e => {
+  if (e.target.closest(".seg, .chip, .dim-item, .m3-cell, .scale-cell, .btn")) refreshLive();
+}, {passive:true});
+refreshLive();
+
+})();
+</script>
+</body>
+</html>

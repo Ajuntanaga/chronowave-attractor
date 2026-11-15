@@ -486,7 +486,7 @@ kbd{font-family:var(--mono);font-size:10px;color:var(--cyan);border:1px solid va
       <div style="color:var(--ivory);letter-spacing:.3em;text-transform:uppercase;margin-bottom:10px">Chronowave <span style="color:var(--amber)">Dynamics</span></div>
       <div>Framework &amp; papers &middot; Anthony M. Vargas &amp; Aethus Iqbal-Samir &middot; 2024&ndash;2026</div>
     </div>
-    <div class="disc">Module XII &middot; The attractor, extracted standalone from the full Temporal Engine compendium on 2026-11-14. A speculative theoretical framework, presented as proposed in the source papers and prototypes.</div>
+    <div class="disc">Module XII &middot; The attractor, extracted standalone from the full Temporal Engine compendium on 2026-11-15. A speculative theoretical framework, presented as proposed in the source papers and prototypes.</div>
   </div>
 </footer>
 
@@ -646,16 +646,23 @@ const lo = {
       /* saturation latches: once the twins are a lobe apart the separation wanders back under 12
          while the clock keeps running, and the estimate then decayed toward zero under a verdict */
       if (sep >= 12) this.twinSat = true;
-      const usable = !this.twinSat && sep > this.twinD0*20 && (this.simT - this.twinT0) > 1;
+      const win = this.simT - this.twinT0, usable = !this.twinSat && sep > this.twinD0*20 && win > 1;
+      /* What one release really does (300 canonical releases, this integrator): the finite-time estimate sits within +-15 % of
+         0.9056 only 53 % of the time at 8 sim-s, 73 % at 12 s and 77 % just before the twins saturate; +-25 % holds 81 %, 90 %
+         and 93 %. So the verdict waits for 10 sim-s and uses +-25 %. The first second of a release can also contract along the
+         stable directions (90 of 200 releases dip below d0/2), which is not "no chaos", so that text waits for 3 sim-s. */
+      const settled = win > 10;
       const lEl = document.getElementById("loLyap");
       if (lEl) lEl.innerHTML = !usable
-        ? "<span style='opacity:.55'>" + (this.twinSat ? "saturated \u2014 re-release the twin" : sep < this.twinD0*0.5 ? "shrinking \u2014 the twins converge (no chaos at these settings)" : "growing\u2026") + "</span>"
+        ? "<span style='opacity:.55'>" + (this.twinSat ? "saturated \u2014 re-release the twin" : sep < this.twinD0*0.5 ? (win > 3 ? "shrinking \u2014 the twins converge (no chaos at these settings)" : "measuring\u2026") : "growing\u2026") + "</span>"
         : "\u03BB \u2248 <b>" + el.toFixed(3) + "</b>" + (canon
-            ? (Math.abs(el/0.9056 - 1) < 0.15
+            ? (!settled
+                ? " <span style='opacity:.55'>(settling \u2014 a single release scatters too much to judge before 10 s)</span>"
+                : Math.abs(el/0.9056 - 1) < 0.25
                 ? " <span style='color:var(--cyan)'>\u2713 vs 0.9056 published</span>" +
-                  " <span style='opacity:.55'>(finite-time estimate from one release; releases scatter \u00B115\u0025)</span>"
+                  " <span style='opacity:.55'>(finite-time estimate from one release; releases scatter about \u00B125\u0025)</span>"
                 : " <span style='color:var(--amber)'>vs 0.9056 published \u2014 off by " + (el - 0.9056).toFixed(3) +
-                  ", beyond the \u00B115\u0025 scatter a single release shows</span>")
+                  ", beyond the \u00B125\u0025 scatter a single release shows (about 1 in 10 do; release again)</span>")
             : " <span style='opacity:.6'>(off-canonical \u03C3\u03C1\u03B2 \u2014 no published value to check)</span>");
       if (!isFinite(sep) || sep > 200){ this.twin = null; this.twinTrail.length = 0; this.twinT0 = undefined; }
     }
@@ -676,7 +683,7 @@ const lo = {
          Same number on any machine, which is what a measurement has to be. */
       this.jumpTimes.push(this.simT);
       while (this.jumpTimes.length && this.simT - this.jumpTimes[0] > 60) this.jumpTimes.shift();
-      if (this.tick){
+      if (this.tick && !this.hush){
         const ctx = AC.get(), now = ctx.currentTime;
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.09, now);
@@ -701,13 +708,20 @@ const lo = {
 };
 lo.twin = null;
 lo.twinTrail = [];
-lo.keepAlive = function(){
+lo.keepAlive = function(hush){
   if (reduced) return;
   const now = performance.now();
   if (this.lastStep === undefined){ this.lastStep = now; return; }
   const n = Math.min(300, Math.floor((now - this.lastStep)/1000*540));
-  if (n > 0){ for (let i = 0; i < n; i++) this.step(0.004); this.lastStep += n/540*1000; }
+  if (n > 0){
+    const was = this.hush; this.hush = !!hush;              /* hush: the steps are taken for a reader, so a jump makes no tick */
+    try { for (let i = 0; i < n; i++) this.step(0.004); } finally { this.hush = was; }
+    this.lastStep += n/540*1000;
+  }
   if (now - this.lastStep > 600) this.lastStep = now;       /* a long gap (hidden tab) is dropped, not replayed */
+};
+lo.peek = function(){
+  if (this.lastStep === undefined || performance.now() - this.lastStep > 100) this.keepAlive(true);
 };
 document.getElementById("loTwin").addEventListener("click", () => {
   lo.twin = {x: lo.x + 1e-6, y: lo.y, z: lo.z};
@@ -922,7 +936,10 @@ liveEq("Lorenz system", () => {
   const r = +lo.el.rho.value + (lo.rAdj || 0), s = +lo.el.sig.value, b = +lo.el.beta.value;
   const x = lo.x, y = lo.y, z = lo.z, n = v => (v < 0 ? "(" + v.toFixed(2) + ")" : v.toFixed(2));
   const q = r > 1 ? Math.sqrt(b*(r - 1)) : 0;
-  return String.raw`\dot x = ${s.toFixed(1)}\,(${n(y)}-${n(x)}) = ${(s*(y - x)).toFixed(2)},\quad \dot y = ${n(x)}\,(${r.toFixed(2)}-${n(z)})-${n(y)} = ${(x*(r - z) - y).toFixed(2)},\quad \dot z = ${n(x)}\cdot${n(y)}-${b.toFixed(2)}\cdot${n(z)} = ${(x*y - b*z).toFixed(2)},\qquad x^{*} = \pm\sqrt{\beta(\rho-1)} = \pm${q.toFixed(2)},\quad \text{jumps} = ${lo.jumps}`;
+  /* lo.rk4 adds the harmonic drive to x-dot, so the row must too (it printed the undriven value with the drive slider up) */
+  const drv = +lo.el.drive.value > 0, F = drv ? lo.force() : 0;
+  const xd = String.raw`${s.toFixed(1)}\,(${n(y)}-${n(x)})` + (drv ? String.raw`+${n(F)}\,\text{(drive)}` : "") + String.raw` = ${(s*(y - x) + F).toFixed(2)}`;
+  return String.raw`\begin{gathered}\dot x = ${xd},\quad \dot y = ${n(x)}\,(${r.toFixed(2)}-${n(z)})-${n(y)} = ${(x*(r - z) - y).toFixed(2)}\\ \dot z = ${n(x)}\cdot${n(y)}-${b.toFixed(2)}\cdot${n(z)} = ${(x*y - b*z).toFixed(2)},\qquad x^{*} = \pm\sqrt{\beta(\rho-1)} = \pm${q.toFixed(2)},\quad \text{jumps} = ${lo.jumps}\end{gathered}`;
 });
 document.addEventListener("input", refreshLive, {passive:true});
 document.addEventListener("click", e => {

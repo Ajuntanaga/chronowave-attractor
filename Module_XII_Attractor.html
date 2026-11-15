@@ -650,11 +650,12 @@ const lo = {
       /* What one release really does (300 canonical releases, this integrator): the finite-time estimate sits within +-15 % of
          0.9056 only 53 % of the time at 8 sim-s, 73 % at 12 s and 77 % just before the twins saturate; +-25 % holds 81 %, 90 %
          and 93 %. So the verdict waits for 10 sim-s and uses +-25 %. The first second of a release can also contract along the
-         stable directions (90 of 200 releases dip below d0/2), which is not "no chaos", so that text waits for 3 sim-s. */
+         stable directions (about 4 in 10 releases dip below d0/2, almost always inside the first 3 sim-s, but 4 % are still below it
+         after 3 s, 0.8 % after 5 s and none of 5000 after 10 s), which is not "no chaos", so that text waits for "settled" too. */
       const settled = win > 10;
       const lEl = document.getElementById("loLyap");
       if (lEl) lEl.innerHTML = !usable
-        ? "<span style='opacity:.55'>" + (this.twinSat ? "saturated \u2014 re-release the twin" : sep < this.twinD0*0.5 ? (win > 3 ? "shrinking \u2014 the twins converge (no chaos at these settings)" : "measuring\u2026") : "growing\u2026") + "</span>"
+        ? "<span style='opacity:.55'>" + (this.twinSat ? "saturated \u2014 re-release the twin" : sep < this.twinD0*0.5 ? (settled ? "shrinking \u2014 the twins converge (no chaos at these settings)" : "measuring\u2026") : "growing\u2026") + "</span>"
         : "\u03BB \u2248 <b>" + el.toFixed(3) + "</b>" + (canon
             ? (!settled
                 ? " <span style='opacity:.55'>(settling \u2014 a single release scatters too much to judge before 10 s)</span>"

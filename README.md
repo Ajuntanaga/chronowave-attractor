@@ -21,10 +21,10 @@ Made on 2026-11-14 from rev b91 of the compendium page (commit `6cf22d4` of chro
 
 ## Checks and limits
 
-- A scripted headless-Chromium test loaded the page, moved every slider, select and checkbox, clicked every button and sent pointer, wheel and key events to every canvas: 79 actions (slider moves, clicks, and pointer, wheel and key events), 1 canvas, no uncaught exception and no console error. It is a smoke test: this extract was not compared with the original module for identical behaviour, and nothing here has had an independent review.
-- The sigma, rho and beta sliders, the Lyapunov and twin-separation readouts, the time fold, the Drive control and the 3-D canvas are this module's own and work here.
+- A scripted headless-Chromium test loaded the page, moved every slider and select, clicked every button, sent pointer and wheel events to every canvas and sent key events to the document: 79 actions (the count includes 38 fixed key and window events), 1 canvas, no uncaught exception and no console error. The page has no selects. It is a smoke test: this extract was not compared with the original module for identical behaviour, and nothing here has had an independent review.
+- The sigma, rho and beta sliders, the Lyapunov and twin-separation readouts, the time fold, the Harmonic drive slider and the 3-D canvas are this module's own and work here.
 - The number of wings comes from the scale selected on the lattice of Module IV; here the scale is fixed at its start-up one (seven selected notes), so there are always seven wings.
-- The drive is always built from a stack interval of 4 semitones (the value Module XIII starts with); the readout next to the Drive slider also shows 261.6 Hz, which comes from A4 = 440 Hz and does not enter the drive.
-- "TFE couple" can be switched on, but the field-equation solver it reads from (Module X) is not here, so it adds nothing to rho (read from the code; the button was only clicked in the test).
+- The drive is always built from a stack interval of 4 semitones (the value Module XIII starts with); the Drive shape readout next to the Harmonic drive slider also shows 261.6 Hz, which comes from A4 = 440 Hz and does not enter the drive.
+- "TFE couple" can be switched on, but the field-equation solver it reads from (Module X) is not here, so it adds nothing to rho, although switching it on still turns off the canonical Lyapunov verdict (read from the code; the button was only clicked in the test).
 - The framework is the author's own and still in progress; Module XVII of the compendium (also a repository of its own, [chronowave-verdicts-and-rulings](https://github.com/Ajuntanaga/chronowave-verdicts-and-rulings)) carries the page's own verdicts and open rulings.
 - No license: all rights are reserved by default, beyond viewing and forking on GitHub; a license is the author's decision.
